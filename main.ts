@@ -7,11 +7,14 @@
  */
 
 import { copyFile, mkdir, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function main(): Promise<void> {
   const outputDir = process.env.MAKEFUN_OUTPUT_DIR || '/output';
-  const srcPath = 'entry.png';
+  const srcPath = join(__dirname, 'entry.png');
 
   try {
     const fileStats = await stat(srcPath);
