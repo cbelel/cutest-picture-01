@@ -6,16 +6,30 @@
  * the entry.png file.
  */
 
-import { copyFile, mkdir } from 'node:fs/promises';
+import { copyFile, mkdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 async function main(): Promise<void> {
   const outputDir = process.env.MAKEFUN_OUTPUT_DIR || '/output';
-  await mkdir(outputDir, { recursive: true });
   const srcPath = 'entry.png';
+
+  try {
+    const fileStats = await stat(srcPath);
+    if (!fileStats.isFile() || fileStats.size === 0) {
+      console.error(`Error: Source file ${srcPath} is missing or empty.`);
+      process.exit(1);
+    }
+  } catch (err) {
+    console.error(`Error: Source file ${srcPath} could not be accessed:`, err);
+    process.exit(1);
+  }
+
+  await mkdir(outputDir, { recursive: true });
   const destPath = join(outputDir, 'entry.png');
   await copyFile(srcPath, destPath);
-  console.log(`Successfully copied ${srcPath} to ${destPath}`);
+
+  const destStats = await stat(destPath);
+  console.log(`Wrote entry.png (${destStats.size} bytes) to ${outputDir}`);
 }
 
 main().catch((err) => {
